@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SOYAJOY - Acchiappa la Frutta!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #fce7c9;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: background-color 0.25s ease;
+        }
+
+        .font-game {
+            font-family: "Arial Rounded MT Bold", "Trebuchet MS", -apple-system, BlinkMacSystemFont, sans-serif;
+            font-weight: 800;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 540px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .brand-banner {
+            width: 100%;
+            height: 86px;
+            margin-bottom: 10px;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 2px solid #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fce7c9;
+            padding: 6px 16px;
+            transition: background-color 0.25s ease;
+        }
+
+        .brand-banner img {
+            width: 240px;
+            height: 70px;
+            object-fit: contain;
+            object-position: center;
+            display: block;
+            pointer-events: none;
+        }
+
+        .stats-bar {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 8px 16px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 2px solid #ffffff;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .lives-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lives-hearts {
+            display: flex;
+            gap: 4px;
+            font-size: 20px;
+        }
+
+        .score-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .combo-val {
+            font-size: 17px;
+            color: #9333ea;
+            text-align: center;
+        }
+
+        .score-val {
+            font-size: 22px;
+            color: #059669;
+            text-align: right;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 4.5;
+            max-height: 66vh;
+            min-height: 360px;
+        }
+
+        #gameCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border-radius: 24px;
+            box-shadow: 0 12px 28px rgba(100, 116, 139, 0.16);
+            touch-action: none;
+            cursor: pointer;
+            background-color: #fce7c9;
+        }
+
+        .overlay-screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 14px;
+            text-align: center;
+            background-color: #ffffff;
+            border: 3px solid #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+            overflow-y: auto;
+        }
+
+        .title-main {
+            font-size: 23px;
+            color: #d97706;
+            margin-bottom: 2px;
+        }
+
+        .subtitle-main {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 10px;
+            font-weight: 600;
+            max-width: 340px;
+        }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            width: 100%;
+            max-width: 360px;
+            margin-bottom: 10px;
+        }
+
+        .character-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 7px 6px;
+            border-radius: 16px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+
+        .character-card:active {
+            transform: scale(0.95);
+        }
+
+        .character-card.selected {
+            transform: scale(1.03);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .card-giraffe { background-color: #fce7c9; color: #78350f; }
+        .card-panda { background-color: #ffe7e7; color: #881337; }
+        .card-crocodile { background-color: #d3f2c6; color: #064e3b; }
+        .card-monkey { background-color: #fff3c3; color: #713f12; }
+
+        .character-card img {
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
+            margin-bottom: 2px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .char-name {
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .char-fruit {
+            font-size: 11px;
+            font-weight: 700;
+            background: #ffffff;
+            padding: 2px 8px;
+            border-radius: 99px;
+            margin-top: 2px;
+            pointer-events: none;
+        }
+
+        .legend-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+            background: #ffffff;
+            padding: 8px 10px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            width: 100%;
+            max-width: 340px;
+            border: 2px solid #f6b75f;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            color: #ffffff;
+            font-size: 20px;
+            padding: 10px 40px;
+            border-radius: 999px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+            touch-action: manipulation;
+            background: linear-gradient(90deg, #f59e0b, #d97706);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.95);
+        }
+
+        .btn-secondary {
+            font-size: 15px;
+            padding: 10px 24px;
+            border-radius: 999px;
+            border: 2px solid #e2e8f0;
+            background: #ffffff;
+            color: #334155;
+            cursor: pointer;
+            touch-action: manipulation;
+            margin-top: 8px;
+        }
+
+        .score-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 14px;
+            width: 100%;
+            max-width: 280px;
+            margin-bottom: 18px;
+            border: 2px solid #ffe4e6;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 0;
+        }
+
+        .footer-bar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 0 6px;
+            font-size: 12px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .btn-pause {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-weight: 700;
+            color: #334155;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+    </style>
+</head>
+<body id="pageBody">
+
+    <div class="container">
+        <div id="brandBanner" class="brand-banner">
+            <img id="logoImage" src="logo-jirafa.png" alt="SOYAJOY">
+        </div>
+
+        <div class="stats-bar">
+            <div class="lives-box">
+                <span class="stat-label">Vite</span>
+                <div id="livesContainer" class="lives-hearts">
+                    <span>❤️</span><span>❤️</span><span>❤️</span>
+                </div>
+            </div>
+            <div class="score-group">
+                <div>
+                    <div class="stat-label">Serie</div>
+                    <div id="comboDisplay" class="combo-val font-game">x1</div>
+                </div>
+                <div>
+                    <div class="stat-label">Punti</div>
+                    <div id="scoreDisplay" class="score-val font-game">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="canvasWrapper" class="canvas-wrapper">
+            <canvas id="gameCanvas"></canvas>
+
+            <div id="startScreen" class="overlay-screen">
+                <h1 id="welcomeTitle" class="title-main font-game">Ciao! Scegli il tuo amico!</h1>
+                <p class="subtitle-main">Tocca un animale per giocare e mangiare la sua frutta preferita e la soia</p>
+
+                <div class="char-grid">
+                    <button type="button" data-char="giraffe" onclick="handleSelectChar('giraffe')" class="character-card card-giraffe selected" style="border-color: #d97706;">
+                        <img src="jirafa.png" alt="Giraffa">
+                        <span class="char-name font-game">Giraffa</span>
+                        <span class="char-fruit">🍑 Pesca</span>
+                    </button>
+
+                    <button type="button" data-char="panda" onclick="handleSelectChar('panda')" class="character-card card-panda">
+                        <img src="panda.png" alt="Tigre">
+                        <span class="char-name font-game">Tigre</span>
+                        <span class="char-fruit">🍓 Fragola</span>
+                    </button>
+
+                    <button type="button" data-char="crocodile" onclick="handleSelectChar('crocodile')" class="character-card card-crocodile">
+                        <img src="cocodrilo.png" alt="Coccodrillo">
+                        <span class="char-name font-game">Coccodrillo</span>
+                        <span class="char-fruit">🍐 Pera</span>
+                    </button>
+
+                    <button type="button" data-char="monkey" onclick="handleSelectChar('monkey')" class="character-card card-monkey">
+                        <img src="mono.png" alt="Mono">
+                        <span class="char-name font-game">Scimmia</span>
+                        <span class="char-fruit">🍌 Banana</span>
+                    </button>
+                </div>
+
+                <div id="legendBox" class="legend-box">
+                    <div class="legend-item" style="color: #059669;">
+                        <span id="legendGoodEmoji" style="font-size: 18px;">🍑 🌱</span>
+                        <span>+10 Punti</span>
+                    </div>
+                    <div class="legend-item" style="color: #e11d48;">
+                        <span style="font-size: 18px;">🦠 🪰</span>
+                        <span>Evita (-1 Vita)</span>
+                    </div>
+                </div>
+
+                <button type="button" id="startBtn" onclick="startGame()" class="btn-primary font-game">
+                    GIOCA! 🎮
+                </button>
+            </div>
+
+            <div id="pauseScreen" class="overlay-screen" style="display: none;">
+                <div style="font-size: 46px; margin-bottom: 8px;">⏸️</div>
+                <h2 class="font-game" style="font-size: 30px; color: #0ea5e9; margin-bottom: 16px;">Gioco in Pausa</h2>
+                <button type="button" onclick="togglePause()" class="btn-primary font-game" style="background: #0ea5e9; font-size: 18px; padding: 12px 32px;">
+                    Continua ▶️
+                </button>
+                <button type="button" onclick="showCharacterSelection()" class="btn-secondary font-game">
+                    Cambia Animale
+                </button>
+                <button type="button" onclick="startGame()" class="btn-secondary font-game">
+                    Ricomincia 🔄
+                </button>
+            </div>
+
+            <div id="gameOverScreen" class="overlay-screen" style="display: none;">
+                <div style="font-size: 46px; margin-bottom: 6px;">🌟</div>
+                <h2 class="font-game" style="font-size: 32px; color: #f43f5e; margin-bottom: 4px;">Bravissimo!</h2>
+                <p id="gameOverSubtitle" style="font-size: 13px; color: #475569; margin-bottom: 14px; font-weight: 600;">Ottimo lavoro!</p>
+
+                <div class="score-card">
+                    <div class="score-row">
+                        <span class="stat-label">Punteggio Finale</span>
+                        <span id="finalScore" class="font-game" style="font-size: 24px; color: #059669;">0</span>
+                    </div>
+                    <div class="score-row" style="border-top: 1px solid #f1f5f9; margin-top: 6px; padding-top: 8px;">
+                        <span class="stat-label">Il Tuo Record</span>
+                        <span id="highScore" class="font-game" style="font-size: 24px; color: #9333ea;">0</span>
+                    </div>
+                </div>
+
+                <button type="button" onclick="startGame()" class="btn-primary font-game" style="background: linear-gradient(90deg, #10b981, #14b8a6); font-size: 18px; padding: 12px 30px;">
+                    Gioca Ancora 🔄
+                </button>
+                <button type="button" onclick="showCharacterSelection()" class="btn-secondary font-game">
+                    Cambia Amico
+                </button>
+            </div>
+        </div>
+
+        <div class="footer-bar">
+            <span>Muovi con il dito, il mouse o le frecce ⬅️ ➡️</span>
+            <button type="button" onclick="togglePause()" class="btn-pause">Pausa ⏸️</button>
+        </div>
+    </div>
+
+    <script>
+        let audioCtx = null;
+        function initAudio() {
+            try {
+                const AC = window.AudioContext || window.webkitAudioContext;
+                if (AC && !audioCtx) audioCtx = new AC();
+                if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+            } catch (e) {}
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                const now = audioCtx.currentTime;
+
+                if (type === 'catch') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.14, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.16);
+                    osc.start(now);
+                    osc.stop(now + 0.16);
+                } else if (type === 'bad') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                    gain.gain.setValueAtTime(0.16, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                } else if (type === 'combo') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.14, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.26);
+                    osc.start(now);
+                    osc.stop(now + 0.26);
+                } else if (type === 'select') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.1);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                }
+            } catch (e) {}
+        }
+
+        // Colores sólidos equivalentes al 34% sobre fondo blanco para evitar velo sobre las frutas
+        const CHARACTERS = {
+            giraffe: {
+                id: 'giraffe',
+                name: 'la Giraffa',
+                fallbackEmoji: '🦒',
+                logoSrc: 'logo-jirafa.png',
+                animalSrc: 'jirafa.png',
+                bgSolid: '#fce7c9',
+                fruitEmoji: '🍑',
+                fruitName: 'pesche',
+                titleColor: '#d97706',
+                btnGradient: 'linear-gradient(90deg, #f59e0b, #d97706)',
+                borderColor: '#d97706',
+                legendBorder: '#f6b75f',
+                goodItems: [
+                    { emoji: '🍑', name: 'Pesca' },
+                    { emoji: '🌱', name: 'Soia' }
+                ]
+            },
+            panda: {
+                id: 'panda',
+                name: 'il Tigre',
+                fallbackEmoji: '🐯',
+                logoSrc: 'logo-panda.png',
+                animalSrc: 'panda.png',
+                bgSolid: '#ffe7e7',
+                fruitEmoji: '🍓',
+                fruitName: 'fragole',
+                titleColor: '#e11d48',
+                btnGradient: 'linear-gradient(90deg, #f43f5e, #fb7185)',
+                borderColor: '#f43f5e',
+                legendBorder: '#ffb9b9',
+                goodItems: [
+                    { emoji: '🍓', name: 'Fragola' },
+                    { emoji: '🌱', name: 'Soia' }
+                ]
+            },
+            crocodile: {
+                id: 'crocodile',
+                name: 'il Coccodrillo',
+                fallbackEmoji: '🐊',
+                logoSrc: 'logo-cocodrilo.png',
+                animalSrc: 'cocodrilo.png',
+                bgSolid: '#d3f2c6',
+                fruitEmoji: '🍐',
+                fruitName: 'pere',
+                titleColor: '#15803d',
+                btnGradient: 'linear-gradient(90deg, #22c55e, #16a34a)',
+                borderColor: '#16a34a',
+                legendBorder: '#7ed957',
+                goodItems: [
+                    { emoji: '🍐', name: 'Pera' },
+                    { emoji: '🌱', name: 'Soia' }
+                ]
+            },
+            monkey: {
+                id: 'monkey',
+                name: 'il Mono',
+                fallbackEmoji: '🐒',
+                logoSrc: 'logo-mono.png',
+                animalSrc: 'mono.png',
+                bgSolid: '#fff3c3',
+                fruitEmoji: '🍌',
+                fruitName: 'banane',
+                titleColor: '#ca8a04',
+                btnGradient: 'linear-gradient(90deg, #eab308, #f59e0b)',
+                borderColor: '#eab308',
+                legendBorder: '#ffdc4f',
+                goodItems: [
+                    { emoji: '🍌', name: 'Banana' },
+                    { emoji: '🌱', name: 'Soia' }
+                ]
+            }
+        };
+
+        const loadedAnimalImgs = {};
+        Object.keys(CHARACTERS).forEach(key => {
+            const img = new Image();
+            img.src = CHARACTERS[key].animalSrc;
+            loadedAnimalImgs[key] = img;
+        });
+
+        const BAD_ITEMS = [
+            { emoji: '🦠', name: 'Batterio' },
+            { emoji: '🪰', name: 'Mosca' }
+        ];
+
+        const pageBody = document.getElementById('pageBody');
+        const brandBanner = document.getElementById('brandBanner');
+        const logoImage = document.getElementById('logoImage');
+        const canvasWrapper = document.getElementById('canvasWrapper');
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const startScreen = document.getElementById('startScreen');
+        const pauseScreen = document.getElementById('pauseScreen');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+
+        const startBtn = document.getElementById('startBtn');
+        const welcomeTitle = document.getElementById('welcomeTitle');
+        const legendBox = document.getElementById('legendBox');
+        const legendGoodEmoji = document.getElementById('legendGoodEmoji');
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const comboDisplay = document.getElementById('comboDisplay');
+        const livesContainer = document.getElementById('livesContainer');
+        const finalScoreDisplay = document.getElementById('finalScore');
+        const highScoreDisplay = document.getElementById('highScore');
+
+        let selectedCharKey = 'giraffe';
+        let gameState = 'START';
+        let score = 0;
+        let lives = 3;
+        let combo = 0;
+        let highScore = 0;
+        try {
+            highScore = parseInt(localStorage.getItem('soyajoy_high_score')) || 0;
+        } catch (e) {}
+
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let elapsedPlayTime = 0;
+        let animFrameId = null;
+        let logicalWidth = 400;
+        let logicalHeight = 450;
+        const BASE_SPAWN_INTERVAL = 1600;
+
+        const player = {
+            x: 150,
+            y: 300,
+            width: 105,
+            height: 110,
+            speed: 460,
+            eatScale: 0
+        };
+
+        let items = [];
+        let particles = [];
+        const keys = { left: false, right: false };
+
+        function handleSelectChar(charKey) {
+            initAudio();
+            playSound('select');
+            selectCharacter(charKey);
+        }
+
+        function selectCharacter(charKey) {
+            selectedCharKey = charKey;
+            const cfg = CHARACTERS[charKey];
+
+            brandBanner.style.backgroundColor = cfg.bgSolid;
+            logoImage.src = cfg.logoSrc;
+            pageBody.style.backgroundColor = cfg.bgSolid;
+            canvas.style.backgroundColor = cfg.bgSolid;
+
+            welcomeTitle.style.color = cfg.titleColor;
+            startBtn.style.background = cfg.btnGradient;
+            legendBox.style.borderColor = cfg.legendBorder;
+            legendGoodEmoji.textContent = `${cfg.fruitEmoji} 🌱`;
+
+            document.querySelectorAll('.character-card').forEach(card => {
+                const isSelected = card.dataset.char === charKey;
+                card.classList.toggle('selected', isSelected);
+                card.style.borderColor = isSelected ? cfg.borderColor : 'transparent';
+            });
+
+            resizeCanvas();
+            render(0);
+        }
+
+        function resizeCanvas() {
+            const rect = canvasWrapper.getBoundingClientRect();
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            logicalWidth = rect.width > 0 ? rect.width : 400;
+            logicalHeight = rect.height > 0 ? rect.height : 450;
+
+            canvas.width = Math.round(logicalWidth * dpr);
+            canvas.height = Math.round(logicalHeight * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            player.width = Math.max(92, logicalWidth * 0.25);
+            player.height = player.width * 1.05;
+            player.y = logicalHeight - player.height - 10;
+
+            if (gameState === 'START') {
+                player.x = logicalWidth / 2 - player.width / 2;
+            } else {
+                clampPlayerPosition();
+            }
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.key === 'p' || e.key === 'P') togglePause();
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        let isDragging = false;
+
+        function handlePointerMove(e) {
+            if (gameState !== 'PLAYING') return;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const touchX = clientX - rect.left;
+            player.x = touchX - player.width / 2;
+            clampPlayerPosition();
+        }
+
+        canvas.addEventListener('mousedown', (e) => { isDragging = true; handlePointerMove(e); });
+        canvas.addEventListener('mousemove', (e) => { if (isDragging) handlePointerMove(e); });
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        canvas.addEventListener('touchstart', (e) => { isDragging = true; handlePointerMove(e); }, { passive: true });
+        canvas.addEventListener('touchmove', handlePointerMove, { passive: true });
+        canvas.addEventListener('touchend', () => { isDragging = false; });
+
+        function clampPlayerPosition() {
+            if (player.x < 0) player.x = 0;
+            if (player.x > logicalWidth - player.width) player.x = logicalWidth - player.width;
+        }
+
+        function getDifficultyFactor() {
+            const timeBonus = Math.min(180, elapsedPlayTime * 3.2);
+            const scoreBonus = Math.min(140, score * 0.65);
+            return timeBonus + scoreBonus;
+        }
+
+        function spawnItem() {
+            const cfg = CHARACTERS[selectedCharKey];
+            const isGood = Math.random() > 0.24;
+
+            let chosenTemplate;
+            if (isGood) {
+                chosenTemplate = Math.random() < 0.80 ? cfg.goodItems[0] : cfg.goodItems[1];
+            } else {
+                chosenTemplate = BAD_ITEMS[Math.floor(Math.random() * BAD_ITEMS.length)];
+            }
+
+            const size = isGood ? Math.max(40, logicalWidth * 0.11) : Math.max(34, logicalWidth * 0.09);
+            const baseSpeed = isGood ? (110 + Math.random() * 25) : (102 + Math.random() * 22);
+            const progressiveSpeed = getDifficultyFactor();
+
+            items.push({
+                x: Math.random() * (logicalWidth - size),
+                y: -size,
+                size: size,
+                speed: baseSpeed + progressiveSpeed,
+                emoji: chosenTemplate.emoji,
+                isGood: isGood,
+                rotation: 0,
+                rotSpeed: (Math.random() - 0.5) * 1.2
+            });
+        }
+
+        function createParticle(x, y, text, color) {
+            particles.push({
+                x: x,
+                y: y,
+                text: text,
+                color: color,
+                opacity: 1.0,
+                vy: -48
+            });
+        }
+
+        function drawCanvasBackground() {
+            const cfg = CHARACTERS[selectedCharKey];
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+            ctx.fillStyle = cfg.bgSolid;
+            ctx.fillRect(0, 0, logicalWidth, logicalHeight);
+            ctx.restore();
+        }
+
+        function drawPlayer(dt) {
+            const cfg = CHARACTERS[selectedCharKey];
+            const img = loadedAnimalImgs[selectedCharKey];
+            ctx.save();
+            ctx.globalAlpha = 1.0;
+
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+            ctx.beginPath();
+            ctx.ellipse(
+                player.x + player.width / 2,
+                player.y + player.height * 0.96,
+                player.width * 0.38,
+                player.height * 0.06,
+                0, 0, Math.PI * 2
+            );
+            ctx.fill();
+
+            if (player.eatScale > 0) {
+                player.eatScale = Math.max(0, player.eatScale - dt * 3.5);
+            }
+            const bounce = Math.sin(player.eatScale * Math.PI) * 0.14;
+            const scaleX = 1 + bounce;
+            const scaleY = 1 - bounce * 0.5;
+
+            ctx.translate(player.x + player.width / 2, player.y + player.height);
+            ctx.scale(scaleX, scaleY);
+
+            if (img && img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, -player.width / 2, -player.height, player.width, player.height);
+            } else {
+                ctx.font = `${player.width * 0.85}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(cfg.fallbackEmoji, 0, 0);
+            }
+
+            ctx.restore();
+        }
+
+        function drawItems() {
+            items.forEach(item => {
+                ctx.save();
+                ctx.globalAlpha = 1.0;
+                ctx.translate(item.x + item.size / 2, item.y + item.size / 2);
+                ctx.rotate(item.rotation);
+                ctx.font = `${item.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#000000';
+                ctx.fillText(item.emoji, 0, 0);
+                ctx.restore();
+            });
+        }
+
+        function drawParticles(dt) {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.y += p.vy * dt;
+                p.opacity -= 1.0 * dt;
+
+                if (p.opacity <= 0) {
+                    particles.splice(i, 1);
+                    continue;
+                }
+
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, p.opacity);
+                ctx.font = 'bold 22px sans-serif';
+                ctx.fillStyle = p.color;
+                ctx.textAlign = 'center';
+                ctx.fillText(p.text, p.x, p.y);
+                ctx.restore();
+            }
+        }
+
+        function update(dt) {
+            elapsedPlayTime += dt;
+
+            if (keys.left) player.x -= player.speed * dt;
+            if (keys.right) player.x += player.speed * dt;
+            clampPlayerPosition();
+
+            spawnTimer += dt * 1000;
+            const intervalReduction = Math.min(950, (elapsedPlayTime * 15) + (score * 2.5));
+            const currentInterval = Math.max(650, BASE_SPAWN_INTERVAL - intervalReduction);
+
+            if (spawnTimer >= currentInterval) {
+                spawnItem();
+                spawnTimer = 0;
+            }
+
+            for (let i = items.length - 1; i >= 0; i--) {
+                const item = items[i];
+                item.y += item.speed * dt;
+                item.rotation += item.rotSpeed * dt;
+
+                const padding = item.isGood ? 0.12 : 0.28;
+                const hitX = item.x + item.size * (1 - padding) > player.x + player.width * 0.1 &&
+                             item.x + item.size * padding < player.x + player.width * 0.9;
+                const hitY = item.y + item.size * (1 - padding) > player.y + player.height * 0.15 &&
+                             item.y + item.size * padding < player.y + player.height * 0.95;
+
+                if (hitX && hitY) {
+                    if (item.isGood) {
+                        combo++;
+                        const comboBonus = combo > 3 ? 2 : 1;
+                        const pts = 10 * comboBonus;
+                        score += pts;
+                        player.eatScale = 1.0;
+
+                        playSound(combo > 3 ? 'combo' : 'catch');
+                        createParticle(item.x + item.size / 2, item.y, `+${pts} ${combo > 3 ? '⭐' : '😋'}`, '#059669');
+                    } else {
+                        combo = 0;
+                        lives--;
+                        playSound('bad');
+                        createParticle(item.x + item.size / 2, item.y, '-1 ❤️', '#e11d48');
+                        updateLivesUI();
+
+                        if (lives <= 0) {
+                            endGame();
+                            return;
+                        }
+                    }
+
+                    updateUI();
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                if (item.y > logicalHeight + 50) {
+                    if (item.isGood) {
+                        combo = 0;
+                        updateUI();
+                    }
+                    items.splice(i, 1);
+                }
+            }
+        }
+
+        function render(dt) {
+            ctx.clearRect(0, 0, logicalWidth, logicalHeight);
+            drawCanvasBackground();
+            drawPlayer(dt);
+            drawItems();
+            drawParticles(dt);
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState !== 'PLAYING') return;
+
+            if (!lastTime) lastTime = timestamp;
+            const dt = Math.min(0.08, (timestamp - lastTime) / 1000);
+            lastTime = timestamp;
+
+            update(dt);
+            render(dt);
+
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function updateUI() {
+            scoreDisplay.textContent = score;
+            comboDisplay.textContent = `x${Math.max(1, combo)}`;
+        }
+
+        function updateLivesUI() {
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const heart = document.createElement('span');
+                heart.textContent = i < lives ? '❤️' : '🤍';
+                livesContainer.appendChild(heart);
+            }
+        }
+
+        function startGame() {
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            initAudio();
+            resizeCanvas();
+            score = 0;
+            lives = 3;
+            combo = 0;
+            elapsedPlayTime = 0;
+            items = [];
+            particles = [];
+            spawnTimer = 0;
+            lastTime = performance.now();
+
+            updateUI();
+            updateLivesUI();
+
+            startScreen.style.display = 'none';
+            pauseScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+
+            gameState = 'PLAYING';
+            player.x = logicalWidth / 2 - player.width / 2;
+            spawnItem();
+            render(0);
+            animFrameId = requestAnimationFrame(gameLoop);
+        }
+
+        function showCharacterSelection() {
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            gameState = 'START';
+            items = [];
+            particles = [];
+            pauseScreen.style.display = 'none';
+            gameOverScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+            resizeCanvas();
+            render(0);
+        }
+
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                if (animFrameId) cancelAnimationFrame(animFrameId);
+                pauseScreen.style.display = 'flex';
+            } else if (gameState === 'PAUSED') {
+                gameState = 'PLAYING';
+                pauseScreen.style.display = 'none';
+                lastTime = performance.now();
+                animFrameId = requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function endGame() {
+            gameState = 'GAMEOVER';
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            const cfg = CHARACTERS[selectedCharKey];
+            if (score > highScore) {
+                highScore = score;
+                try {
+                    localStorage.setItem('soyajoy_high_score', highScore);
+                } catch (e) {}
+            }
+
+            document.getElementById('gameOverSubtitle').textContent =
+                `Ottimo lavoro con ${cfg.name}, le sue ${cfg.fruitName} e la soia!`;
+            finalScoreDisplay.textContent = score;
+            highScoreDisplay.textContent = highScore;
+            gameOverScreen.style.display = 'flex';
+        }
+
+        selectCharacter('giraffe');
+    </script>
+</body>
+</html>
